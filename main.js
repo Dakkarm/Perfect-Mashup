@@ -4,9 +4,32 @@ const prompt = require("prompt-sync")({ sigint: true});
 const puppeteer = require("puppeteer");
 const fs = require('fs');
 
+async function hasInstrumentalness(filename) {
+
+  const fileContent = fs.readFileSync(filename, 'utf8');
+  let match;
+  let count = 0;
+
+  while ((match = /<span class="ant-progress-text" title="/g.exec(fileContent)) !== null) {
+    count++;
+    if (count === 6) {
+
+      const sixthMatchPosition = /<span class="ant-progress-text" title="/g.lastIndex;
+      const nextCharacter = fileContent.charAt(sixthMatchPosition);
+      //console.log(typeof parseInt(nextCharacter, 10))
+      if (parseInt(nextCharacter, 10) != 0){
+        return true;
+      } else {
+        return false;
+      }
+    }
+  }
+  return null;
+}
+
 async function askWhichSong(listSize){
 
-  let answer = prompt('\nPick The Index Of The Song You Want: ');
+  let answer = prompt('Pick The Index Of The Song You Want: ');
 
   if (answer > listSize.length || answer < 0 || isNaN(answer) || answer == '') {
     console.log(`${answer} is not a valid option!\n`);
@@ -97,7 +120,7 @@ async function mashup(song1, song2){
 
     await browser.close();
 
-    console.log(`\nLINK MASHUP: ${finalURL}`);
+    console.log(finalURL);
     return;
   }
   catch (error){
@@ -191,7 +214,7 @@ async function main(input){
   let indexFirstSong = await askWhichSong(first_round_links)
   console.log('\n-----------------------------------------------------------------------\n')
 
-  const firstSong = first_matchesTitles[indexFirstSong].replace(/[^a-zA-Z0-9\s]/g, ' ')
+  let firstSong = first_matchesTitles[indexFirstSong].replace(/[^a-zA-Z0-9\s]/g, ' ')
   //console.log(firstSong)
   //////////////////////////////////////////////////
 
@@ -222,13 +245,19 @@ async function main(input){
   let indexSecondSong = await askWhichSong(second_round_links)
   console.log('\n-----------------------------------------------------------------------\n')
 
-  const secondSong = second_matchesTitles[indexSecondSong].replace(/[^a-zA-Z0-9\s]/g, ' ')
+  let secondSong = second_matchesTitles[indexSecondSong].replace(/[^a-zA-Z0-9\s]/g, ' ')
   //console.log(secondSong)
 
   //////////////////////////////////////////////////
 
+  console.log('LINK: ')
   await mashup(firstSong, secondSong)
-  
+
+  console.log('LINK CON 1^ STRUMENTALE: ')
+  await mashup(firstSong+' instrumental', secondSong)
+
+  console.log('LINK CON 2^ STRUMENTALE: ')
+  await mashup(firstSong, secondSong+' instrumental')
 }
 
-main('bello figo al pranzo');
+main('');
